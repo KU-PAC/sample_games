@@ -38,6 +38,8 @@ terraform -chdir=infra output apps
 npm run verify:deployment
 ```
 
+`verify:deployment`には3作品すべての`dist/`が必要です。手元にない場合は`npm run build`で生成してください。公開版と異なるソースからビルドした場合はファイル不一致として失敗します。検証するのはファイル内容・MIME型・キャッシュヘッダー・HTTPS転送・STARFALLの直接アクセスで、ゲームの操作確認は`npm run test:browser`で別に行います（ローカル開発サーバーを使用）。
+
 CloudFront Functionは拡張子のないルートを`/index.html`へ内部書き換えします。STARFALLの`/debug`や各チェックポイントへの直接アクセスも有効です。存在しないJS/CSSにはHTMLを返しません。
 
 既存プロファイルと同じ権限を持つ別名プロファイルを使う場合は`AWS_PROFILE=... npm run deploy`でバックエンドとプロバイダーの両方に指定できます。AWSアカウントIDは固定し、別アカウントへの誤デプロイを防ぎます。

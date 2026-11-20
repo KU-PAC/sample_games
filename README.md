@@ -2,9 +2,17 @@
 
 React + Vite をベースにした、個別に起動できる3つのブラウザゲームです。
 
-## 起動
+## 公開URL
 
-AWSへの公開・再デプロイは[公開手順](infra/README.md)を参照してください。
+| ゲーム | URL |
+| --- | --- |
+| 五目並べ | https://gomoku.dev.kupac.org |
+| STARFALL | https://shooter.dev.kupac.org |
+| WILDBLOOM | https://survivor.dev.kupac.org |
+
+STARFALLの[デバッグ用開始位置一覧](https://shooter.dev.kupac.org/debug)も公開版で利用できます。AWSへの公開・再デプロイは[公開手順](infra/README.md)を参照してください。
+
+## 起動
 
 Node.js **22.12以上**を使用してください。ワークスペース直下で実行します。
 
@@ -52,7 +60,7 @@ ReactのUIとPhaserの描画を組み合わせた縦型STGです。通常ウェ�
 - 体力5、被弾後1.5秒の無敵時間。自機中央の白い点が当たり判定です。
 - 敵5体撃破ごとにアイテム出現。射撃は3段階、回復アイテムもあります。
 - 火力2から直進弾にホーミング弾が加わります。火力2では1発、火力3では2発が敵を追尾します。
-- ボムは弾消し・範囲攻撃・2秒無敵。被弾するとボムが2個に回復。ステージ突破で体力とボムを1回復。
+- ボムは通常開始時2個、所持上限3個。使用すると弾消し・範囲攻撃・2秒無敵。実際にダメージを受けると所持数が2個に戻ります（3個持っている場合も2個、無敵中の接触では変化なし）。ステージ突破で体力とボムを1回復。
 - 通常移動は360px/秒、低速移動は90px/秒。当たり判定は中央の半径3pxで、高速弾も移動経路で衝突を判定します。
 - STAGE 1は導入。STAGE 2・3は固定の出現順と攻撃手順を持ち、誘導・切り返し・先回り・早期撃破によるパターン攻略を要求します。
 - STAGE 2は花弁・螺旋・移動する隙間などの複合攻撃。STAGE 3は冒頭8秒の高密度弾列から直接ボスへ進みます。ボスは紺珠伝の弾幕を参考にした4種類の丸弾のフェーズで構成し、フェーズ3では四隅の弾塊が時間差で広がります。
@@ -75,7 +83,7 @@ Three.jsで描画する、斜め上から見下ろした低ポリゴン3Dサバ�
 | 一時停止・再開 | P / Esc / 画面のボタン |
 | タッチ操作 | 左の移動パッド・右の回避ボタン |
 
-- 強化は**火力・機動力・耐久力**の3系統。レベルアップや強化結晶の取得時に時間が止まり、1つずつ選びます。火力は最大8回、機動力は最大3回です。
+- 強化は**火力・機動力・耐久力**の3系統。レベルアップや強化結晶の取得時に時間が止まり、1つずつ選びます。上下左右キーで選択中の枠を移動し、Enterで決定できます。選択は端で循環し、上限に達したスキルは飛ばします。火力は最大8回、機動力は最大3回です。
 - 岩壁は敵味方の移動と弾を遮ります。突進を壁に誘導すると敵が気絶し、通常の追跡敵は壁を迂回します。
 - 高台は射程 +4・威力 +20%。登り坂では追跡敵が遅くなり、中央のぬかるみでは自機の速度が32%下がります。
 - 追跡・突進・射撃・重装の4種類。突進と射撃は予告線で確認でき、発動前の0.35秒は狙いが固定されます。後半ほど出現間隔が短くなり、射撃が広がります。
@@ -96,9 +104,14 @@ playwright.config.js     # ブラウザテスト設定
 ├── gomoku/
 │   └── src/             # React UI、AI、Web Worker、テスト
 ├── shooter/
-│   └── src/             # React UI、Phaser描画、独立したゲームモデル、テスト
-└── survivor/
-    └── src/             # React UI、Three.js描画、独立したゲームモデル、テスト
+│   ├── src/             # React UI、Phaser描画、独立したゲームモデル、テスト
+│   ├── docs/            # STAGE 3の設計・難易度評価
+│   └── tools/           # 難易度計測・攻略リプレイ
+├── survivor/
+│   ├── src/             # React UI、Three.js描画、独立したゲームモデル、テスト
+│   ├── docs/            # 難易度評価・保存済み測定結果
+│   └── tools/           # 難易度計測・保存済み攻略記録
+└── infra/               # AWS Terraform、デプロイ・公開内容の検証
 ```
 
 描画とゲームルールを分離し、戦闘・遷移・勝敗のロジックをNode.jsから検証できる構成です。図形と3Dモデルはコードで生成しています。画像・音声素材やAPIキーは不要です。フォントはGoogle Fontsを読み込み、取得できない場合はシステムフォントへフォールバックします。BGM・効果音は実装していません。
@@ -119,3 +132,5 @@ npm run test:browser     # デスクトップ・モバイル幅の操作確認
 実装に使用したAPIの参考： [Phaser Scene](https://docs.phaser.io/api-documentation/class/scene)、[Phaser Scale](https://docs.phaser.io/api-documentation/namespace/scale)、[Three.js WebGLRenderer](https://threejs.org/docs/pages/WebGLRenderer)。
 
 シューターの難易度診断は `npm run measure:difficulty --workspace @arcade/shooter`。測定条件・限界・調整方針は [難易度評価](shooter/docs/difficulty-evaluation.md)を参照してください。
+
+サバイバルの難易度診断は `npm run difficulty --workspace @arcade/survivor`。評価用の回帰テストは `npm test --workspace @arcade/survivor`。ルートの `npm test` に含まれない評価用テストと保存記録の扱いは、[難易度評価](survivor/docs/difficulty-evaluation.md)を参照してください。
