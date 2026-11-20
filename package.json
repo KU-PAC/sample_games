@@ -1,0 +1,26 @@
+{
+  "name": "signal-arcade",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "gomoku",
+    "shooter",
+    "survivor"
+  ],
+  "scripts": {
+    "gomoku": "npm run dev --workspace @arcade/gomoku",
+    "shooter": "npm run dev --workspace @arcade/shooter",
+    "survivor": "npm run dev --workspace @arcade/survivor",
+    "build": "npm run build --workspaces",
+    "test": "node test-runner.js",
+    "test:browser": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "vite": "^7.2.2"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
